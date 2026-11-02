@@ -3,9 +3,14 @@ import 'package:flutter/material.dart';
 import '../../../core/widgets/onepost_mark.dart';
 
 class OnboardingScreen extends StatefulWidget {
-  const OnboardingScreen({super.key, required this.onComplete});
+  const OnboardingScreen({
+    super.key,
+    required this.onComplete,
+    this.initialPage = 0,
+  });
 
   final Future<void> Function() onComplete;
+  final int initialPage;
 
   @override
   State<OnboardingScreen> createState() => _OnboardingScreenState();
@@ -39,10 +44,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     ),
   ];
 
-  final PageController _controller = PageController();
+  late final PageController _controller;
   int _currentPage = 0;
   bool _isCompleting = false;
   String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentPage = widget.initialPage.clamp(0, _pages.length - 1);
+    _controller = PageController(initialPage: _currentPage);
+  }
 
   @override
   void dispose() {

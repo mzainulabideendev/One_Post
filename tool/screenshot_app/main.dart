@@ -37,13 +37,18 @@ Future<void> main() async {
   );
 
   final initialScreen = Uri.base.queryParameters['screen'] ?? 'welcome';
+  final onboardingPage =
+      int.tryParse(Uri.base.queryParameters['page'] ?? '') ?? 0;
 
   final router = GoRouter(
     initialLocation: '/$initialScreen',
     routes: [
       GoRoute(
         path: '/welcome',
-        builder: (context, state) => OnboardingScreen(onComplete: () async {}),
+        builder: (context, state) => OnboardingScreen(
+          onComplete: () async {},
+          initialPage: onboardingPage,
+        ),
       ),
       GoRoute(path: '/sign-in', builder: (context, state) => const AuthScreen()),
       GoRoute(
