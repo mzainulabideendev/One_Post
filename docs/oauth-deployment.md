@@ -2,6 +2,22 @@
 
 The repository includes OAuth start and callback functions, but the flow is not live until the database migration, Supabase function secrets, and each provider's registered OAuth application are configured. Do not put provider credentials or the token-encryption key in the Flutter app.
 
+## Deployment status (2026-11-02)
+
+| Item | State |
+| --- | --- |
+| Migration `002_oauth_connections.sql` | ✅ Applied to `impcfnniwlupxzeofmfq` |
+| `oauth-start` | ✅ Deployed, JWT required |
+| `oauth-callback` | ✅ Deployed, `verify_jwt = false` |
+| Base secrets | ✅ `OAUTH_CALLBACK_URL`, `OAUTH_APP_REDIRECT_URL`, `OAUTH_ENCRYPTION_KEY`, `META_GRAPH_API_VERSION` |
+| Provider client IDs/secrets | ❌ Not configured — no provider app credentials are registered |
+| Provider callback registration | ❌ Pending for all six providers |
+| Android/iOS deep link | ✅ `com.onepost.mobile://oauth-callback` registered |
+| Live endpoint checks | ✅ `oauth-start` returns 401 without a session; `oauth-callback` returns 400 without a valid state |
+| End-to-end provider connection | ❌ Blocked on provider credentials and accounts |
+
+Complete sections 2 and 3 below for each provider you intend to enable, then repeat the verification in section 5.
+
 ## 1. Apply the database migration
 
 In the Supabase SQL Editor for the OnePost project, run [`backend/supabase/migrations/002_oauth_connections.sql`](../backend/supabase/migrations/002_oauth_connections.sql) after `001_init.sql`.
@@ -57,13 +73,20 @@ X_CLIENT_SECRET=
 Generate a new encryption key locally; keep it in a password manager and Supabase secrets, never in source control:
 
 ```powershell
-[Convert]::ToBase64String([Security.Cryptography.RandomNumberGenerator]::GetBytes(32)).TrimEnd('=').Replace('+','-').Replace('/','_')
+$bytes = New-Object byte[] 32
+[Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($bytes)
+[Convert]::ToBase64String($bytes).TrimEnd('=').Replace('+','-').Replace('/','_')
 ```
 
-Only add the provider client ID and secret pairs for provider apps you have registered. Set the configured secrets using the local file:
+Only add the provider client ID and secret pairs for provider apps you have registered. Blank entries are placeholders: passing `.env.oauth` directly to `secrets set` would store empty secret values. Set only the non-empty lines:
 
 ```powershell
-supabase secrets set --env-file .env.oauth --project-ref impcfnniwlupxzeofmfq
+$base = "C:\Users\$env:USERNAME\AppData\Local\Temp\onepost-oauth-secrets.env"
+Get-Content .env.oauth | Where-Object {
+  $_ -match '=' -and ($_ -split '=', 2)[1].Trim() -ne ''
+} | Set-Content $base
+supabase secrets set --env-file $base --project-ref impcfnniwlupxzeofmfq
+Remove-Item $base -Force
 ```
 
 Supabase supplies `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` to Edge Functions. Do not copy the service-role key into `.env.oauth` or set it in a client build.
@@ -72,9 +95,10 @@ The encryption key currently uses version `1`. Back it up securely. Rotating it 
 
 ## 4. Deploy the functions
 
-From the repository root, after installing and logging in to the Supabase CLI:
+Run from the `backend` directory, after installing and logging in to the Supabase CLI. The CLI resolves functions from `./supabase/functions`, and running here also avoids loading the Flutter app's JSON `.env` at the repository root:
 
 ```powershell
+cd backend
 supabase functions deploy oauth-start --project-ref impcfnniwlupxzeofmfq
 supabase functions deploy oauth-callback --no-verify-jwt --project-ref impcfnniwlupxzeofmfq
 ```

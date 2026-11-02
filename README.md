@@ -62,7 +62,7 @@ Captured from the real OnePost widget tree at a 430 × 932 mobile viewport. The 
 ## Project status
 
 > **Development preview — not production-release ready.**
-> OAuth connection code is implemented but requires deployment and provider app credentials. Live social publishing is **not implemented**. Use the generated APK for UI and development testing only.
+> OAuth start/callback are deployed with base server secrets, but no provider app credentials are registered yet. Live social publishing is **not implemented**. Use the generated APK for UI and development testing only.
 
 | Capability | Status | Notes |
 | --- | :---: | --- |
@@ -74,8 +74,8 @@ Captured from the real OnePost widget tree at a 430 × 932 mobile viewport. The 
 | Draft history | ✅ Implemented | Owner-scoped list from `posts` |
 | Private media upload | ✅ Implemented | Signature, size, and checksum validation; private bucket |
 | Social account list | ✅ Implemented | Reads verified accounts; empty by default |
-| Provider OAuth start | 🚧 Implemented, not deployed | Authenticated start function for six providers; requires app credentials |
-| OAuth callback + encrypted token storage | 🚧 Implemented, not deployed | Provider callback, account discovery, AES-GCM token encryption |
+| Provider OAuth start | ✅ Deployed, credentials pending | Authenticated start function for six providers; needs each provider's client ID/secret |
+| OAuth callback + encrypted token storage | ✅ Deployed, credentials pending | Provider callback, account discovery, AES-GCM token encryption, one-use state |
 | Publishing adapters | ❌ Not implemented | Instagram, Facebook Pages, TikTok, YouTube, LinkedIn, X |
 | Durable publishing worker | ❌ Not implemented | Queue, leases, retries, reconciliation, monitoring |
 | Live publish verification | ❌ Not implemented | No post is marked published without provider confirmation |
@@ -359,7 +359,8 @@ Read [`docs/security.md`](docs/security.md) before deploying.
 
 ## Roadmap
 
-- [ ] Apply the OAuth RPC migration, configure provider secrets, and deploy the OAuth Edge Functions.
+- [x] Apply the OAuth RPC migration and deploy the OAuth Edge Functions with base server secrets.
+- [ ] Register provider apps and add client credentials for Instagram, Facebook Pages, TikTok, YouTube, LinkedIn, and X.
 - [ ] Add KMS-backed token encryption and refresh handling (server only).
 - [ ] Implement provider adapters for Instagram, Facebook Pages, TikTok, YouTube, LinkedIn, and X.
 - [ ] Build the durable publishing worker with leases, retries, backoff, and reconciliation.
@@ -390,7 +391,7 @@ Read [`docs/security.md`](docs/security.md) before deploying.
 
 ## Known limitations
 
-- Social provider connection code is implemented but **not deployed/configured**; the six providers require server credentials, registered callbacks, and any required provider approval.
+- The OAuth Edge Functions are deployed and the base secrets are configured, but **no provider app credentials are registered yet**; each provider still requires its OAuth application, client ID/secret, callback registration, and any required approval.
 - Access tokens are encrypted at rest by the OAuth callback, but automated token refresh/revocation and key rotation are not implemented.
 - The publishing worker and job dispatch do not exist yet, so drafts cannot be published.
 - Email sign-up confirmation and password reset depend on Supabase email delivery; configure custom SMTP for production traffic.

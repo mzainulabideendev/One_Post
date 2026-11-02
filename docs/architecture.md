@@ -14,5 +14,5 @@
 - Provider OAuth authorization-code exchanges belong on server-side callbacks.
 - Provider-specific logic must stay isolated in server-side adapters.
 - Publishing must only be marked successful after documented provider confirmation.
-- Server-side OAuth start/callback code, one-use state validation, provider account discovery, and AES-GCM credential encryption are implemented. They still require project secrets and deployment.
+- Server-side OAuth start/callback code, one-use state validation, provider account discovery, and AES-GCM credential encryption are implemented and deployed. Provider app credentials and approvals are still required before connections can succeed.
 - Provider token refresh/revocation, publishing adapters, a persistent worker, and live provider verification are not implemented.

@@ -8,4 +8,4 @@
 6. Replace the sample application identifier and debug signing setup with identifiers and a release keystore owned by the publisher.
 7. Test RLS and storage isolation, and then verify every provider in a staging environment with authorized test accounts.
 
-OAuth start/callback functions are in the repository but require project credentials and deployment. The publishing worker and provider-specific publishing adapters are not included. See [release readiness](release-readiness.md).
+OAuth start/callback functions are deployed with base secrets configured. Provider app credentials, callback registration, and provider reviews remain outstanding. The publishing worker and provider-specific publishing adapters are not included. See [release readiness](release-readiness.md).
