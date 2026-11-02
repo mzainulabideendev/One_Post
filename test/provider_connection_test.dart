@@ -3,6 +3,23 @@ import 'package:onepost/features/social_accounts/data/provider_connection_servic
 import 'package:onepost/features/social_accounts/domain/social_account.dart';
 
 void main() {
+  group('provider connection errors', () {
+    test('explains an unreachable connection service without showing HTTP 0', () {
+      final message = providerConnectionErrorMessage(0, null);
+
+      expect(message, contains('Check your internet connection'));
+      expect(message, contains('No account was connected'));
+      expect(message, isNot(contains('HTTP 0')));
+    });
+
+    test('identifies a missing OAuth function', () {
+      expect(
+        providerConnectionErrorMessage(404, null),
+        contains('oauth-start function is not deployed'),
+      );
+    });
+  });
+
   group('provider authorization URLs', () {
     test('accepts each provider own HTTPS authorization host', () {
       expect(

@@ -13,6 +13,28 @@ class ProviderConnectionException implements Exception {
   String toString() => message;
 }
 
+String providerConnectionErrorMessage(int status, Object? details) {
+  if (status <= 0) {
+    return 'OnePost could not reach the account connection service. Check your internet connection and try again. '
+        'No account was connected.';
+  }
+  if (status == 404) {
+    return 'Account connection is not enabled yet: the Supabase oauth-start function is not deployed. '
+        'No account was connected. Deploy the server OAuth functions and configure provider credentials first.';
+  }
+  if (status == 401 || status == 403) {
+    return 'Your OnePost session is missing or expired. Sign in again before connecting an account.';
+  }
+  if (status == 429) {
+    return 'Account authorization is temporarily rate-limited. Wait before trying again.';
+  }
+
+  if (details is Map && details['message'] is String) {
+    return details['message'] as String;
+  }
+  return 'The account connection service could not start authorization (HTTP $status). No account was connected.';
+}
+
 bool isTrustedProviderAuthorizationUrl(SocialProvider provider, Uri uri) {
   if (uri.scheme != 'https') return false;
   final allowedHosts = switch (provider) {
@@ -100,26 +122,7 @@ class ProviderConnectionService {
   }
 
   String _messageForFunctionError(FunctionException error) {
-    if (error.status <= 0) {
-      return 'OnePost could not reach the account connection service. Check your internet connection and try again. '
-          'No account was connected.';
-    }
-    if (error.status == 404) {
-      return 'Account connection is not enabled yet: the Supabase oauth-start function is not deployed. '
-          'No account was connected. Deploy the server OAuth functions and configure provider credentials first.';
-    }
-    if (error.status == 401 || error.status == 403) {
-      return 'Your OnePost session is missing or expired. Sign in again before connecting an account.';
-    }
-    if (error.status == 429) {
-      return 'Account authorization is temporarily rate-limited. Wait before trying again.';
-    }
-
-    final details = error.details;
-    if (details is Map && details['message'] is String) {
-      return details['message'] as String;
-    }
-    return 'The account connection service could not start authorization (HTTP ${error.status}). No account was connected.';
+    return providerConnectionErrorMessage(error.status, error.details);
   }
 }
 
