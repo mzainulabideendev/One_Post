@@ -1,6 +1,6 @@
 # Provider setup checklist
 
-The mobile app provides Connect entry points for each provider and resumes the selected flow after OnePost sign-in. Provider authorization is separate from OnePost authentication. The server-side OAuth start/callback and publishing integrations are not implemented or deployed, so no provider is currently ready to connect or publish. Each checklist below is a release prerequisite, not a claim that the integration is implemented.
+The mobile app provides Connect entry points for each provider and resumes the selected flow after OnePost sign-in. Provider authorization is separate from OnePost authentication. Server-side OAuth start/callback code is implemented but must be deployed with provider credentials and registered callback URLs before any provider can be connected. Publishing adapters and the publishing worker remain unimplemented. See [OAuth deployment](oauth-deployment.md).
 
 ## Instagram
 - Use a Meta Business account and professional account authentication.
@@ -26,3 +26,5 @@ The mobile app provides Connect entry points for each provider and resumes the s
 ## X
 - Use the approved developer application and OAuth 2.0 user context.
 - Respect access tiers, media-processing rules and quota constraints.
+
+OAuth code and requested scopes are documented in the deployment guide. Provider app registration, user authorization, test accounts, and any required reviews remain owner/provider responsibilities.

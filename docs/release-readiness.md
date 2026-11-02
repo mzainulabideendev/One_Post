@@ -17,7 +17,8 @@
 
 - Supabase Auth is reachable, and the dashboard confirms the schema is installed. A live authenticated app session and cross-user RLS/storage tests have not been performed.
 - The project currently has the default email delivery ceiling of 2 emails/hour, and the dashboard disables editing this setting until Custom SMTP is configured. Configure a verified SMTP provider under Supabase Authentication settings before relying on sign-up confirmations or password-reset email at production traffic.
-- Provider OAuth start/callback, account discovery/revocation, server-side token encryption/KMS, provider-specific publishing adapters, durable worker, retries, status polling and webhook validation are not implemented.
+- Provider OAuth start/callback, account discovery, and AES-GCM token encryption are implemented in code but are not deployed/configured. Provider app credentials, callback registration, and any required reviews are still outstanding.
+- Automated token refresh/revocation, encryption-key rotation, provider-specific publishing adapters, durable worker, retries, status polling and webhook validation are not implemented.
 - No Instagram, Facebook Pages, TikTok, YouTube, LinkedIn or X API call was tested. Provider app registrations, permissions, quotas and approvals are unknown.
 - Android release builds now require a publisher-owned keystore through environment variables. The Android package identifier `com.onepost.mobile` is a placeholder and must be confirmed/owned before distribution.
 - iOS builds/signing require macOS and the publisher's Apple provisioning credentials.

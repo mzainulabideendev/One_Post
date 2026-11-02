@@ -11,6 +11,7 @@ import '../features/composer/screens/composer_screen.dart';
 import '../features/dashboard/screens/dashboard_screen.dart';
 import '../features/dashboard/screens/history_screen.dart';
 import '../features/dashboard/screens/settings_screen.dart';
+import '../features/social_accounts/screens/oauth_callback_screen.dart';
 import '../features/social_accounts/screens/social_accounts_screen.dart';
 
 String? safePostLoginDestination(String? destination) {
@@ -87,6 +88,13 @@ class AppRouter {
         GoRoute(
           path: '/accounts',
           builder: (context, state) => const SocialAccountsScreen(),
+        ),
+        GoRoute(
+          path: '/oauth-callback',
+          builder: (context, state) => OAuthCallbackScreen(
+            connected: state.uri.queryParameters['status'] == 'connected',
+            provider: state.uri.queryParameters['provider'] ?? '',
+          ),
         ),
         GoRoute(
           path: '/composer',

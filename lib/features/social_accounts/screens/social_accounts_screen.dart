@@ -15,7 +15,8 @@ class SocialAccountsScreen extends ConsumerStatefulWidget {
       _SocialAccountsScreenState();
 }
 
-class _SocialAccountsScreenState extends ConsumerState<SocialAccountsScreen> {
+class _SocialAccountsScreenState extends ConsumerState<SocialAccountsScreen>
+    with WidgetsBindingObserver {
   static const _providers = [
     SocialProvider.instagram,
     SocialProvider.facebookPages,
@@ -27,6 +28,25 @@ class _SocialAccountsScreenState extends ConsumerState<SocialAccountsScreen> {
 
   SocialProvider? _connectingProvider;
   bool _pendingConnectionHandled = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      ref.invalidate(connectedAccountsProvider);
+    }
+  }
 
   Future<void> _connect(SocialProvider provider) async {
     if (Supabase.instance.client.auth.currentSession == null) {

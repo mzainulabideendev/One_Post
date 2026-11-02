@@ -3,9 +3,9 @@
 1. Configure Supabase Auth email settings and redirect URLs.
 2. Apply the SQL migrations in `backend/supabase/migrations`.
 3. Build the client with an HTTPS Supabase project URL and the publishable/anon key via `--dart-define-from-file`.
-4. Configure provider secrets only in a server-side secrets manager after the relevant OAuth and API code is implemented.
-5. Before publishing, implement and deploy provider OAuth callbacks, token encryption, a durable worker and monitoring.
+4. Apply the OAuth state/credential RPC migration, register provider callback URLs, configure provider credentials only in Supabase Edge Function secrets, and deploy OAuth functions following [the OAuth deployment guide](oauth-deployment.md).
+5. Before publishing, implement and deploy the provider adapters, durable worker, token refresh/revocation, and monitoring.
 6. Replace the sample application identifier and debug signing setup with identifiers and a release keystore owned by the publisher.
 7. Test RLS and storage isolation, and then verify every provider in a staging environment with authorized test accounts.
 
-This repository does not include deployable provider OAuth or publishing functions yet. See [release readiness](release-readiness.md).
+OAuth start/callback functions are in the repository but require project credentials and deployment. The publishing worker and provider-specific publishing adapters are not included. See [release readiness](release-readiness.md).

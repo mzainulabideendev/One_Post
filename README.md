@@ -62,7 +62,7 @@ Captured from the real OnePost widget tree at a 430 × 932 mobile viewport. The 
 ## Project status
 
 > **Development preview — not production-release ready.**
-> Live social publishing is **not implemented**. Use the generated APK for UI and development testing only.
+> OAuth connection code is implemented but requires deployment and provider app credentials. Live social publishing is **not implemented**. Use the generated APK for UI and development testing only.
 
 | Capability | Status | Notes |
 | --- | :---: | --- |
@@ -74,8 +74,8 @@ Captured from the real OnePost widget tree at a 430 × 932 mobile viewport. The 
 | Draft history | ✅ Implemented | Owner-scoped list from `posts` |
 | Private media upload | ✅ Implemented | Signature, size, and checksum validation; private bucket |
 | Social account list | ✅ Implemented | Reads verified accounts; empty by default |
-| Provider OAuth start | 🚧 Partial | Client calls a server `oauth-start` function; function not included |
-| OAuth callback + token storage | ❌ Not implemented | Requires server-side exchange and a KMS-backed secret store |
+| Provider OAuth start | 🚧 Implemented, not deployed | Authenticated start function for six providers; requires app credentials |
+| OAuth callback + encrypted token storage | 🚧 Implemented, not deployed | Provider callback, account discovery, AES-GCM token encryption |
 | Publishing adapters | ❌ Not implemented | Instagram, Facebook Pages, TikTok, YouTube, LinkedIn, X |
 | Durable publishing worker | ❌ Not implemented | Queue, leases, retries, reconciliation, monitoring |
 | Live publish verification | ❌ Not implemented | No post is marked published without provider confirmation |
@@ -175,8 +175,8 @@ All tables have RLS enabled. Credential, OAuth-state, webhook, and job tables ha
 │       └── social_accounts/          # Accounts + OAuth start client
 ├── backend/
 │   ├── supabase/
-│   │   ├── migrations/001_init.sql   # Schema, RLS, RPC, storage bucket
-│   │   └── functions/README.md       # Server function status
+│   │   ├── migrations/               # Schema, RLS, OAuth RPC, storage bucket
+│   │   └── functions/                # OAuth start/callback Edge Functions
 │   └── worker/README.md              # Publishing worker status
 ├── docs/                             # Architecture, security, testing, …
 │   └── screenshots/                  # README gallery
@@ -215,10 +215,10 @@ flutter pub get
 ### 2. Configure Supabase
 
 1. Create a project at [supabase.com](https://supabase.com).
-2. Open **SQL Editor** and run [`backend/supabase/migrations/001_init.sql`](backend/supabase/migrations/001_init.sql), or apply it with the Supabase CLI.
+2. Open **SQL Editor** and run [`backend/supabase/migrations/001_init.sql`](backend/supabase/migrations/001_init.sql), followed by [`backend/supabase/migrations/002_oauth_connections.sql`](backend/supabase/migrations/002_oauth_connections.sql), or apply both with the Supabase CLI.
 3. In **Authentication → Providers**, enable Email.
 4. For production email delivery, configure a custom SMTP provider. The default project email ceiling is very low.
-5. Add your app redirect URL (`com.onepost.mobile://login-callback`) under **Authentication → URL Configuration** if you add deep-link callbacks.
+5. Configure provider apps, exact callback URLs, and server-only secrets as described in [`docs/oauth-deployment.md`](docs/oauth-deployment.md).
 
 ### 3. Add local configuration
 
@@ -244,7 +244,7 @@ flutter pub get
 flutter run --dart-define-from-file=.env
 ```
 
-The app shows a configuration screen instead of the sign-in flow when the Supabase URL or public key is missing/invalid.
+The app shows a configuration screen instead of the sign-in flow when the Supabase URL or public key is missing/invalid. Apply the OAuth migration and deploy both Edge Functions before expecting a live provider connection.
 
 ---
 
@@ -359,12 +359,13 @@ Read [`docs/security.md`](docs/security.md) before deploying.
 
 ## Roadmap
 
-- [ ] Deploy `oauth-start` and callback Edge Functions with encrypted OAuth state/PKCE.
+- [ ] Apply the OAuth RPC migration, configure provider secrets, and deploy the OAuth Edge Functions.
 - [ ] Add KMS-backed token encryption and refresh handling (server only).
 - [ ] Implement provider adapters for Instagram, Facebook Pages, TikTok, YouTube, LinkedIn, and X.
 - [ ] Build the durable publishing worker with leases, retries, backoff, and reconciliation.
 - [ ] Verify every provider with authorized staging accounts and documented success conditions.
 - [ ] Add Supabase RLS/storage cross-user integration tests.
+- [ ] Implement provider token refresh, revocation, and encryption-key rotation.
 - [ ] Configure custom SMTP and production auth redirects.
 - [ ] Replace the placeholder Android package identifier and configure release signing.
 - [ ] Add CI (analyze, test, build) and dependency/security scanning.
@@ -377,6 +378,7 @@ Read [`docs/security.md`](docs/security.md) before deploying.
 | --- | --- |
 | [`docs/architecture.md`](docs/architecture.md) | Implemented layers and design rules |
 | [`docs/provider-setup.md`](docs/provider-setup.md) | Per-provider release prerequisites |
+| [`docs/oauth-deployment.md`](docs/oauth-deployment.md) | OAuth secrets, migrations, deployment and verification |
 | [`docs/security.md`](docs/security.md) | Security and compliance notes |
 | [`docs/testing.md`](docs/testing.md) | Test coverage and integration gaps |
 | [`docs/deployment.md`](docs/deployment.md) | Deployment checklist |
@@ -388,7 +390,8 @@ Read [`docs/security.md`](docs/security.md) before deploying.
 
 ## Known limitations
 
-- Social provider connections are **not** live; the six providers require server-side OAuth and publishing work.
+- Social provider connection code is implemented but **not deployed/configured**; the six providers require server credentials, registered callbacks, and any required provider approval.
+- Access tokens are encrypted at rest by the OAuth callback, but automated token refresh/revocation and key rotation are not implemented.
 - The publishing worker and job dispatch do not exist yet, so drafts cannot be published.
 - Email sign-up confirmation and password reset depend on Supabase email delivery; configure custom SMTP for production traffic.
 - `com.onepost.mobile` is a placeholder application identifier.
